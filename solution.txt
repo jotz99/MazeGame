@@ -1,0 +1,165 @@
+/*
+  Kwantlen Polytechnic University
+  Manjot Singh 
+*/ 
+
+#include <iostream>
+#include <fstream>
+#include <cctype> // allow toupper() function
+using namespace std;
+
+const int 
+  ROWS = 10,
+  COLS = 20;
+
+// function declarations
+void loadMaze(bool[][COLS]);
+void printMap(const bool[][COLS], int, int);
+char getChoice(const bool[][COLS], int, int);
+void updatePosition(char, int&, int&);
+bool checkExit(int, int);
+
+int main()
+{
+  cout << "Welcome to the Maze Game!\n";
+  cout << "(press ENTER to start)";
+  cin.get();
+  system("clear"); // change to   system("clear")  for mac terminal
+  
+  // partial initialization here makes ALL values zero
+  bool maze[ROWS][COLS] = {}; // otherwise, full of random memory values
+  loadMaze(maze);
+  
+  // set up user map
+  bool map[ROWS][COLS] = {};
+  // set the starting position as visited
+  map[0][0] = 1;
+  
+  // user's start position in the maze
+  int 
+    x = 0, 
+    y = 0;
+  
+  char choice;
+  
+  printMap(map, x, y);
+  do
+  {
+    choice = getChoice(maze, x, y);
+    updatePosition(choice, x, y);
+    map[y][x] = 1;
+    system("clear");
+    printMap(map, x, y);
+    if (checkExit(x, y)) break;
+  } while (true);
+  
+  system("pause");
+  return 0;
+}
+
+// function definitions
+void loadMaze(bool maze[][COLS])
+{
+  ifstream inFile;
+  inFile.open("maze.txt");
+  // fill it vertically flipped, so x position
+  // follows Cartesian coordinate system
+  for (int i = ROWS-1; i >= 0; i--)
+  {
+    for (int j = 0; j < COLS; j++)
+      inFile >> maze[i][j];
+  }
+  inFile.close();
+}
+
+void printMap(const bool map[][COLS], int x, int y)
+{
+  for (int i = ROWS-1; i >= 0; i--)
+  {
+    for (int j = 0; j < COLS; j++)
+    {
+      if (x == j && y == i)
+        cout << 'x';
+      else if (map[i][j])
+        cout << '.';
+      else
+        cout << '#';
+    }
+    cout << endl;
+  }
+}
+
+char getChoice(const bool maze[][COLS], int x, int y)
+{
+  char choice;
+  bool badChoice;
+  do
+  {
+    cout << endl;
+    cout << "Which way would you like to move?\n";
+    cout << "Choose ";
+    // present available choices to user by checking maze
+    bool 
+      left = false,
+      right = false,
+      down = false,
+      up = false;
+    if (x > 0 && maze[y][x-1]) {
+      left = true;
+      cout << "left (L) ";
+    }
+    if (x < COLS-1 && maze[y][x+1]) {
+      right = true;
+      cout << "right (R) ";
+    }
+    if (y > 0 && maze[y-1][x]) {
+      down = true;
+      cout << "down (D) ";
+    }
+    if (y < ROWS-1 && maze[y+1][x]) {
+      up = true;
+      cout << "up (U) ";
+    }
+    
+    cout << "to explore: ";
+    cin >> choice;
+    
+    choice = toupper(choice);
+    badChoice = 
+      !(choice == 'L' && left)  &&
+      !(choice == 'R' && right) &&
+      !(choice == 'D' && down)  &&
+      !(choice == 'U' && up);
+  } while (badChoice);
+  
+  return choice;
+}
+
+void updatePosition(char choice, int &x, int &y)
+{
+  switch (choice)
+  {
+    case 'L':
+      x--;
+      break;
+    case 'R':
+      x++;
+      break;
+    case 'D':
+      y--;
+      break;
+    case 'U':
+      y++;
+      break;
+  }
+}
+
+bool checkExit(int x, int y)
+{
+  if (x == COLS-1 && y == ROWS-1)
+  {
+    cout << "You found the exit!\n";
+    return true;
+  }
+  return false;
+}
